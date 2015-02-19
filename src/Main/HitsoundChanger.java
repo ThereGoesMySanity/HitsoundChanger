@@ -1,6 +1,8 @@
 package Main;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -16,10 +18,23 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.ScrollPaneLayout;
+import javax.swing.UIManager;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 
 
@@ -62,6 +77,7 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 	
 	private JPanel panel;
 	private String chosen;
+	private JLabel lblCurrentlySelected;
 	
 	
 	/**
@@ -114,29 +130,28 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 
 
 		buttonPanel = new JScrollPane();
-		buttonPanel.setBounds(0, 0, 444, 216);
+		buttonPanel.setBounds(0, 0, 444, 198);
 		frame.getContentPane().add(buttonPanel);
 		buttonPanel.setLayout(new ScrollPaneLayout());
 		buttonPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel = new JPanel();
 		buttonPanel.setViewportView(panel);
 		panel.setLayout(new GridLayout(panel.getComponentCount(), 1, 0, 0));
-		
-		try {
-			btnNewHitsound = new JButton("Set as new hitsound", new ImageIcon(
-											ImageIO.read(getClass().getResource("HitsoundChanger/Resources/148890.gif"))));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		btnNewHitsound = new JButton("Set as new hitsound");
 		btnNewHitsound.setBounds(0, 214, 444, 36);
 		btnNewHitsound.addActionListener(this);
 		frame.getContentPane().add(btnNewHitsound);
+		
+		lblCurrentlySelected = new JLabel("Currently selected:");
+		lblCurrentlySelected.setHorizontalAlignment(SwingConstants.CENTER);
+		lblCurrentlySelected.setBounds(0, 200, 444, 14);
+		frame.getContentPane().add(lblCurrentlySelected);
 
 		for(File hitsound : hitsounds){
 			z = new JButton(hitsound.getName(), new ImageIcon("/HitsoundChanger/Resources/148890.gif"));
 			z.addActionListener(this);
 			z.setBounds(0, 48*(buttonPanel.getComponentCount()-3), buttonPanel.getWidth(), 48);
+			z.setIcon(new ImageIcon(HitsoundChanger.class.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 			panel.add(z);
 		}
 
@@ -193,6 +208,7 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 					z = new JButton(newHitsound.getName(), new ImageIcon("/HitsoundChanger/Resources/148890.gif"));
 					z.addActionListener(this);
 					z.setBounds(0, 16*buttonPanel.getComponentCount(), buttonPanel.getWidth(), 16);
+					z.setIcon(new ImageIcon(HitsoundChanger.class.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 					panel.add(z);
 					panel.setLayout(new GridLayout(panel.getComponentCount(), 1, 0, 0));
 				}
@@ -240,16 +256,14 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 		}else if(e.getSource() instanceof JButton){							//Use one of the hitsounds
 			try {
 				chosen = ((JButton) e.getSource()).getText();
+				lblCurrentlySelected.setText("Currently selected: " + chosen);
 				for(File item : hitsounds){
 					if(item.getName().equals(chosen)){
 						Clip currentClip = loadedHitsounds.get(hitsounds.indexOf(item));
 						if(currentClip.isActive()){
-							currentClip.stop();
+							break;
 						}
 						currentClip.start();
-						while(currentClip.isActive()){
-							continue;
-						}
 						loadedHitsounds.get(hitsounds.indexOf(item)).setFramePosition(0);
 					}
 				}
