@@ -3,13 +3,20 @@ package Main;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
@@ -17,29 +24,61 @@ import javax.swing.*;
 
 
 public class HitsoundChanger extends JPanel implements ActionListener {
-
-	/**
-	 * 
-	 */
+	private static final Path[] DEFAULTDIRECTORIES = {
+		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/"),
+		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\sounds\\sound\\ui\\"),
+		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/")};
+	private static Path[] DIRECTORIES = {
+		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/"),
+		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\sounds\\sound\\ui\\"),
+		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/")};
+	private static final int LINUX = 0;
+	private static final int WINDOWS = 1;
+	private static final int MAC = 2;
+	private int os;
+	
+	
 	private static final long serialVersionUID = 1L;
 	private JFrame frame;
+	
 	private JFileChooser fileChooser;
+	
 	private JMenuBar menuBar;
+	
 	private JMenu mnFile;
+	
 	private JMenuItem mntmAddHitsound;
-
+	private JMenuItem mntmChangeTfInstallation;
+	
 	private ArrayList<File> hitsounds = new ArrayList<File>();
 	private ArrayList<Clip> loadedHitsounds = new ArrayList<Clip>();
 
 	private JScrollPane buttonPanel;
-	Path hitsoundDir = Paths.get(System.getProperty("user.home")).resolve("Hitsound");
+	
+	private Path hitsoundDir = Paths.get(System.getProperty("user.home")).resolve("Hitsound");
+	
 	private JButton z;
+	private JButton btnNewHitsound;
+	
 	private JPanel panel;
+	private String chosen;
+	
+	
 	/**
 	 * Create the application.
 	 */
 	public HitsoundChanger() {
 		super(new BorderLayout());
+		if(System.getProperty("os.name").startsWith("Windows")){
+			os = WINDOWS;
+		}else if(System.getProperty("os.name").startsWith("Mac")){
+			os = MAC;
+		}else if(System.getProperty("os.name").startsWith("Linux")){
+			os = LINUX;
+		}else{
+			infoBox("What OS are you trying to run this on and why?", "????????");
+			System.exit(1);
+		}
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -48,6 +87,13 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 
 		if(!Files.isDirectory(hitsoundDir)){
 			hitsoundDir.toFile().mkdirs();
+		}
+		if(Files.exists(hitsoundDir.resolve("loc.txt"))){
+			try (BufferedReader br = new BufferedReader(new FileReader(hitsoundDir.resolve("loc.txt").toString()))){
+				DIRECTORIES[os] = Paths.get(br.readLine());
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
 		}
 
 		for(File hitsound : hitsoundDir.toFile().listFiles()){
@@ -68,13 +114,24 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 
 
 		buttonPanel = new JScrollPane();
-		buttonPanel.setBounds(0, 0, 444, 250);
+		buttonPanel.setBounds(0, 0, 444, 216);
 		frame.getContentPane().add(buttonPanel);
 		buttonPanel.setLayout(new ScrollPaneLayout());
 		buttonPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel = new JPanel();
 		buttonPanel.setViewportView(panel);
-		panel.setLayout(new GridLayout(1, 0, 0, 0));
+		panel.setLayout(new GridLayout(panel.getComponentCount(), 1, 0, 0));
+		
+		try {
+			btnNewHitsound = new JButton("Set as new hitsound", new ImageIcon(
+											ImageIO.read(getClass().getResource("HitsoundChanger/Resources/148890.gif"))));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		btnNewHitsound.setBounds(0, 214, 444, 36);
+		btnNewHitsound.addActionListener(this);
+		frame.getContentPane().add(btnNewHitsound);
 
 		for(File hitsound : hitsounds){
 			z = new JButton(hitsound.getName(), new ImageIcon("/HitsoundChanger/Resources/148890.gif"));
@@ -96,16 +153,20 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 		mntmAddHitsound = new JMenuItem("Add hitsound...");
 		mntmAddHitsound.addActionListener(this);
 		mnFile.add(mntmAddHitsound);
+		
+		mntmChangeTfInstallation = new JMenuItem("Change TF2 installation location...");
+		mntmChangeTfInstallation.addActionListener(this);
+		mnFile.add(mntmChangeTfInstallation);
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	public static void infoBox(String infoMessage, String titleBar){
-        JOptionPane.showMessageDialog(null, infoMessage, "InfoBox: " + titleBar, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, infoMessage, titleBar, JOptionPane.INFORMATION_MESSAGE);
     }
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == mntmAddHitsound){
+		if(e.getSource() == mntmAddHitsound){									//Add new hitsound
 			int returnVal = fileChooser.showOpenDialog(HitsoundChanger.this);
 			if(returnVal == JFileChooser.APPROVE_OPTION){
 				File[] newHitsounds = fileChooser.getSelectedFiles();
@@ -115,7 +176,7 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 						break;
 					}
 					try {
-						Files.copy(newHitsound.toPath(), hitsoundDir.resolve(newHitsound.getName()));
+						Files.copy(newHitsound.toPath(), hitsoundDir.resolve(newHitsound.getName()), StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -133,20 +194,60 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 					z.addActionListener(this);
 					z.setBounds(0, 16*buttonPanel.getComponentCount(), buttonPanel.getWidth(), 16);
 					panel.add(z);
+					panel.setLayout(new GridLayout(panel.getComponentCount(), 1, 0, 0));
 				}
 				panel.validate();
 			}
-		}else if(e.getSource() instanceof JButton){
+		}else if(e.getSource() == mntmChangeTfInstallation){						//Change install dir
+			String newPath = JOptionPane.showInputDialog("Enter new path. Current path: \n" 
+														+ DIRECTORIES[os].toString() 
+														+ "\nTo reset, type default.");
+			if (newPath != null&&(newPath.contains(":")||newPath.contains("/")||newPath.equals("default"))) {
+				if (newPath.equals("default")) {
+					DIRECTORIES[os] = DEFAULTDIRECTORIES[os];
+					try {
+						Files.deleteIfExists(hitsoundDir.resolve("loc.txt"));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}else{
+					DIRECTORIES[os] = Paths.get(newPath);
+					if (!Files.isDirectory(DIRECTORIES[os])) {
+						DIRECTORIES[os].toFile().mkdirs();
+					}
+					try (PrintWriter writer = new PrintWriter(hitsoundDir.resolve("loc.txt").toString(), "UTF-8");) {
+						writer.println(newPath);
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (UnsupportedEncodingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+		}else if(e.getSource() == btnNewHitsound && chosen != null){			//Set new hitsound
+			if(!Files.isDirectory(DIRECTORIES[os])){
+				DIRECTORIES[os].toFile().mkdirs();
+			}
 			try {
-				String chosen = ((JButton) e.getSource()).getText();
+				Files.copy(hitsoundDir.resolve(chosen), DIRECTORIES[os].resolve("hitsound.wav"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}else if(e.getSource() instanceof JButton){							//Use one of the hitsounds
+			try {
+				chosen = ((JButton) e.getSource()).getText();
 				for(File item : hitsounds){
 					if(item.getName().equals(chosen)){
 						Clip currentClip = loadedHitsounds.get(hitsounds.indexOf(item));
-						if(currentClip.isRunning()){
+						if(currentClip.isActive()){
 							currentClip.stop();
 						}
 						currentClip.start();
-						while(currentClip.isRunning()){
+						while(currentClip.isActive()){
 							continue;
 						}
 						loadedHitsounds.get(hitsounds.indexOf(item)).setFramePosition(0);
