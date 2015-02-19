@@ -35,6 +35,7 @@ import javax.swing.ScrollPaneLayout;
 import javax.swing.UIManager;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import java.awt.Toolkit;
 
 
 
@@ -96,10 +97,11 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 			System.exit(1);
 		}
 		frame = new JFrame();
+		frame.setResizable(false);
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HitsoundChanger.class.getResource("/Resources/Killicon_sniper_rifle.png")));
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
-		frame.setResizable(false);
 
 		if(!Files.isDirectory(hitsoundDir)){
 			hitsoundDir.toFile().mkdirs();
