@@ -3,6 +3,7 @@ package Main;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -24,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -32,10 +34,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.ScrollPaneLayout;
-import javax.swing.UIManager;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import java.awt.Toolkit;
+import javax.swing.UIManager;
 
 
 
@@ -99,7 +99,7 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 		frame = new JFrame();
 		frame.setResizable(false);
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(HitsoundChanger.class.getResource("/Resources/Killicon_sniper_rifle.png")));
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 480, 320);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -113,7 +113,7 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 				e.printStackTrace();
 			} 
 		}
-
+		
 		for(File hitsound : hitsoundDir.toFile().listFiles()){
 			String[] find = hitsound.getName().split("\\.");
 			if(find[find.length-1].equals("wav") ){
@@ -132,27 +132,27 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 
 
 		buttonPanel = new JScrollPane();
-		buttonPanel.setBounds(0, 0, 444, 198);
+		buttonPanel.setBounds(0, 0, 474, 216);
 		frame.getContentPane().add(buttonPanel);
 		buttonPanel.setLayout(new ScrollPaneLayout());
 		buttonPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel = new JPanel();
 		buttonPanel.setViewportView(panel);
-		panel.setLayout(new GridLayout(panel.getComponentCount(), 1, 0, 0));
+		panel.setLayout(new GridLayout(hitsounds.size(), 1, 0, 0));
 		btnNewHitsound = new JButton("Set as new hitsound");
-		btnNewHitsound.setBounds(0, 214, 444, 36);
+		btnNewHitsound.setBounds(0, 234, 474, 36);
 		btnNewHitsound.addActionListener(this);
 		frame.getContentPane().add(btnNewHitsound);
 		
 		lblCurrentlySelected = new JLabel("Currently selected:");
 		lblCurrentlySelected.setHorizontalAlignment(SwingConstants.CENTER);
-		lblCurrentlySelected.setBounds(0, 200, 444, 14);
+		lblCurrentlySelected.setBounds(0, 219, 474, 14);
 		frame.getContentPane().add(lblCurrentlySelected);
 
 		for(File hitsound : hitsounds){
-			z = new JButton(hitsound.getName(), new ImageIcon("/HitsoundChanger/Resources/148890.gif"));
+			z = new JButton(hitsound.getName());
 			z.addActionListener(this);
-			z.setBounds(0, 48*(buttonPanel.getComponentCount()-3), buttonPanel.getWidth(), 48);
+			z.setBounds(0, 48*hitsounds.size(), buttonPanel.getWidth()/2, 48);
 			z.setIcon(new ImageIcon(HitsoundChanger.class.getResource("/com/sun/javafx/webkit/prism/resources/mediaPlayDisabled.png")));
 			panel.add(z);
 		}
@@ -256,22 +256,34 @@ public class HitsoundChanger extends JPanel implements ActionListener {
 				e1.printStackTrace();
 			}
 		}else if(e.getSource() instanceof JButton){							//Use one of the hitsounds
-			try {
-				chosen = ((JButton) e.getSource()).getText();
-				lblCurrentlySelected.setText("Currently selected: " + chosen);
-				for(File item : hitsounds){
-					if(item.getName().equals(chosen)){
-						Clip currentClip = loadedHitsounds.get(hitsounds.indexOf(item));
-						if(currentClip.isActive()){
-							break;
+			chosen = ((JButton) e.getSource()).getText();
+			if (!chosen.equals("Delete")) {
+				try {
+					
+					lblCurrentlySelected.setText("Currently selected: "
+							+ chosen);
+					for (File item : hitsounds) {
+						if (item.getName().equals(chosen)) {
+							Clip currentClip = loadedHitsounds.get(hitsounds
+									.indexOf(item));
+							if (currentClip.isActive()) {
+								break;
+							}
+							currentClip.start();
+							loadedHitsounds.get(hitsounds.indexOf(item))
+									.setFramePosition(0);
 						}
-						currentClip.start();
-						loadedHitsounds.get(hitsounds.indexOf(item)).setFramePosition(0);
 					}
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			}else{
+				hitsounds.remove(((JButton) e.getSource()).getY()/48);
+				panel.remove(((JButton) e.getSource()).getY()/24);
+				panel.remove(((JButton) e.getSource()).getY()/24);
+				panel.setLayout(new GridLayout(hitsounds.size(), 2, 0, 0));
+				panel.validate();
 			}
 		}
 	}
