@@ -41,13 +41,13 @@ import javax.swing.UIManager;
 
 public class HitsoundChanger extends JPanel implements ActionListener {
 	private static final Path[] DEFAULTDIRECTORIES = {
-		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/"),
-		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\sounds\\sound\\ui\\"),
-		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/")};
+		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/workshop/sound/ui/"),
+		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\workshop\\sound\\ui\\"),
+		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/workshop/sound/ui/")};
 	private static Path[] DIRECTORIES = {
-		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/"),
-		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\sounds\\sound\\ui\\"),
-		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/sounds/sound/ui/")};
+		Paths.get("~/.local/share/Steam/SteamApps/common/Team Fortress 2/tf/custom/workshop/sound/ui/"),
+		Paths.get("C:\\Program Files (x86)\\Steam\\SteamApps\\common\\Team Fortress 2\\tf\\custom\\workshop\\sound\\ui\\"),
+		Paths.get("~/Library/Application Support/Steam/SteamApps/common/Team Fortress 2/tf/custom/workshop/sound/ui/")};
 	private static final int LINUX = 0;
 	private static final int WINDOWS = 1;
 	private static final int MAC = 2;
